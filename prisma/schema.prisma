@@ -1,0 +1,213 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+// generator erd {
+//   provider = "prisma-erd-generator"
+//   output   = "./ERD/erd.svg"
+// }
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+  VENDOR
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Users {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String           @unique
+  password     String
+  role         Role             @default(CUSTOMER)
+  phone        String?           @unique
+  profileImage String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  cart         Cart?
+  orders       Order[]
+  reviews      ProductReview[]
+  favourites   Favourite[]
+  addresses    Address[]
+}
+
+model Address {
+  id        Int   @id @default(autoincrement())
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  houseNo   String
+  street    String
+  society   String
+  city      String
+  zipCode   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id        Int    @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  products  Product[]
+}
+
+model Product {
+  id           Int          @id @default(autoincrement())
+  name         String
+  description  String
+  price        Float
+  category     Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId   Int
+  imageUrl     String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  cartItems    CartItem[]
+  reviews      ProductReview[]
+  favourites   Favourite[]
+  addons       Addon[]
+  orderItems   OrderItem[]
+}
+
+model Addon {
+  id         Int        @id @default(autoincrement())
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  Int
+  name       String
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  options    AddonOption[]
+}
+
+model AddonOption {
+  id              Int   @id @default(autoincrement())
+  addon           Addon    @relation(fields: [addonId], references: [id], onDelete: Cascade)
+  addonId         Int
+  optionName      String
+  additionalPrice Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  cartItems       CartItem[]    @relation("CartItemAddonOptions")
+  orderItems      OrderItem[]   @relation("OrderItemAddonOptions")
+
+}
+
+
+model Cart {
+  id        Int     @id @default(autoincrement())
+  user      Users      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  cartItems CartItem[]
+}
+
+model CartItem {
+  id        Int   @id @default(autoincrement())
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId    Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addonOptions  AddonOption[]  @relation("CartItemAddonOptions")
+
+}
+
+model Order {
+  id           Int       @id @default(autoincrement())
+  user         Users        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  totalAmount  Float
+  status       OrderStatus  @default(PENDING)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  orderItems   OrderItem[] 
+  payment      Payment?
+  shipping     ShippingInfo?
+}
+
+model OrderItem {
+  id         Int   @id @default(autoincrement())
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId    Int
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  Int
+  quantity   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  addonOptions AddonOption[] @relation("OrderItemAddonOptions")
+}
+
+model Payment {
+  id         Int         @id @default(autoincrement())
+  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId    Int         @unique
+  amount     Float
+  method     String
+  status     PaymentStatus  @default(PENDING)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+}
+
+model ShippingInfo {
+  id         Int   @id @default(autoincrement())
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId    Int   @unique
+  houseNo   String
+  street    String
+  society   String
+  city      String
+  zipCode   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ProductReview {
+  id        Int   @id @default(autoincrement())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+}
+
+model Favourite {
+  id        Int   @id @default(autoincrement())
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  createdAt DateTime @default(now())
+}
+
