@@ -2,8 +2,8 @@
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-// import serverless from 'serverless-http';
 import { PrismaClient } from "@prisma/client";
+import serverless from "serverless-http";
 
 // Load .env only in local dev
 if (process.env.NODE_ENV !== "production") {
@@ -22,7 +22,6 @@ function getPrisma() {
   return prisma;
 }
 
-// Create Express app
 const app: Express = express();
 
 app.use(
@@ -36,7 +35,7 @@ app.use(express.json());
 
 // Health check
 app.get("/", (req: Request, res: Response) => {
-  res.status(200).send("E-Learning backend is running on Vercel");
+  res.status(200).send("E-Learning backend is running on Vercel 🚀");
 });
 
 // Simple DB test route (debug only — remove in prod)
@@ -45,7 +44,12 @@ app.get("/test-db", (req, res) => {
 });
 
 // Local dev mode
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+  });
+}
+
+// ✅ Export handler for Vercel
+export default serverless(app);
