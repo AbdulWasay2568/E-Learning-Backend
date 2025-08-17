@@ -1,17 +1,16 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "build/index.js",
   "type": "module",
   "engines": {
     "node": ">=20.0.0"
   },
   "scripts": {
-    "dev": "echo ⚙️ Configuring Environment for development... && nodemon",
-    "start": "echo 🚀 Starting Server... && cross-env NODE_ENV=production node --experimental-specifier-resolution=node ./build/index.js",
-    "build": "echo 🛠️ Building... && rimraf ./build && tsc && tsc-alias",
-    "deploy": "echo ✨ Starting Deployment... && vercel && echo ✅ Deployment Completed",
-    "postinstall": "echo 📦 Generating Prisma... && prisma generate"
+    "dev": "nodemon src/index.ts",
+    "build": "rimraf ./build && tsc && tsc-alias",
+    "start": "node ./build/index.js",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -22,16 +21,11 @@
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.7.0",
     "cors": "^2.8.5",
-    "cross-env": "^10.0.0",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
-    "nodemon": "^3.1.10",
-    "rimraf": "^6.0.1",
-    "serverless-http": "^3.2.0",
-    "socket.io": "^4.8.1",
-    "typescript": "^5.8.3"
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -39,12 +33,12 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
+    "nodemon": "^3.1.10",
     "prisma": "^6.13.0",
     "prisma-erd-generator": "^2.0.4",
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.20.3",
-    "typescript-transform-paths": "^3.5.5"
+    "typescript": "^5.8.3"
   }
 }
