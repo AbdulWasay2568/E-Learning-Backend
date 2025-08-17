@@ -3,7 +3,6 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
-import serverless from "serverless-http";
 
 // Load .env only in local dev
 if (process.env.NODE_ENV !== "production") {
@@ -13,13 +12,13 @@ if (process.env.NODE_ENV !== "production") {
 // Lazy Prisma client instance
 let prisma: PrismaClient | null = null;
 function getPrisma() {
-  if (!prisma) {
-    prisma = new PrismaClient({
-      log:
-        process.env.NODE_ENV === "production" ? [] : ["query", "error", "warn"],
-    });
-  }
-  return prisma;
+  // if (!prisma) {
+  //   prisma = new PrismaClient({
+  //     log:
+  //       process.env.NODE_ENV === "production" ? [] : ["query", "error", "warn"],
+  //   });
+  // }
+  return null;
 }
 
 const app: Express = express();
@@ -52,4 +51,4 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // ✅ Export handler for Vercel
-export default serverless(app);
+export default app;
