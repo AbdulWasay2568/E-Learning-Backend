@@ -43,9 +43,6 @@
     "resolveFullPaths": true,
     "verbose": false
   },
-  "files": [
-    "./src/types/index.ts"
-  ],
   "include": [
     "./src/*.env.d.ts",
     "./src/**/*.ts",

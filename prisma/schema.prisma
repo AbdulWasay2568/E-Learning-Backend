@@ -1,213 +1,200 @@
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "./ERD/erd.svg"
+}
 
 generator client {
   provider = "prisma-client-js"
 }
-// generator erd {
-//   provider = "prisma-erd-generator"
-//   output   = "./ERD/erd.svg"
-// }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  CUSTOMER
-  VENDOR
+model User {
+  id            Int       @id @default(autoincrement())
+  name          String
+  email         String    @unique
+  password      String
+  role          Role      @default(Student)
+  profileImage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  courses       Course[]        @relation("CourseTeacher")
+  enrollments   Enrollment[]
+  groups        GroupMember[]
+  notes         Note[]
+  quizzes       Quiz[]
+  chatMessages  ChatMessage[]
+  progress      Progress[]
+  feedbacks     Feedback[]
+  comments      Comment[]
 }
 
-enum OrderStatus {
-  PENDING
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
+model Course {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String?
+  thumbnail   String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  teacher     User        @relation("CourseTeacher", fields: [teacherId], references: [id])
+  teacherId   Int
+  lectures    Lecture[]
+  enrollments Enrollment[]
+  quizzes     Quiz[]
+  feedbacks   Feedback[]
 }
 
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
+model Lecture {
+  id         Int      @id @default(autoincrement())
+  title      String
+  videoUrl   String
+  duration   Int
+  createdAt  DateTime  @default(now())
+
+  course     Course    @relation(fields: [courseId], references: [id])
+  courseId   Int
+  notes      Note[]
+  progress   Progress[]
+  comments   Comment[] 
 }
 
-model Users {
-  id           Int           @id @default(autoincrement())
-  name         String
-  email        String           @unique
-  password     String
-  role         Role             @default(CUSTOMER)
-  phone        String?           @unique
-  profileImage String?
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+model Note {
+  id         Int      @id @default(autoincrement())
+  summary    String   
+  createdAt  DateTime  @default(now())
 
-  cart         Cart?
-  orders       Order[]
-  reviews      ProductReview[]
-  favourites   Favourite[]
-  addresses    Address[]
+  lecture    Lecture   @relation(fields: [lectureId], references: [id])
+  lectureId  Int
+
+  user       User      @relation(fields: [userId], references: [id])
+  userId     Int
 }
 
-model Address {
-  id        Int   @id @default(autoincrement())
-  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int
-  houseNo   String
-  street    String
-  society   String
-  city      String
-  zipCode   String
+model Enrollment {
+  id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
 
-model Category {
-  id        Int    @id @default(autoincrement())
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  products  Product[]
-}
-
-model Product {
-  id           Int          @id @default(autoincrement())
-  name         String
-  description  String
-  price        Float
-  category     Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  categoryId   Int
-  imageUrl     String?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-
-  cartItems    CartItem[]
-  reviews      ProductReview[]
-  favourites   Favourite[]
-  addons       Addon[]
-  orderItems   OrderItem[]
-}
-
-model Addon {
-  id         Int        @id @default(autoincrement())
-  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId  Int
-  name       String
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-
-  options    AddonOption[]
-}
-
-model AddonOption {
-  id              Int   @id @default(autoincrement())
-  addon           Addon    @relation(fields: [addonId], references: [id], onDelete: Cascade)
-  addonId         Int
-  optionName      String
-  additionalPrice Float    @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  cartItems       CartItem[]    @relation("CartItemAddonOptions")
-  orderItems      OrderItem[]   @relation("OrderItemAddonOptions")
-
-}
-
-
-model Cart {
-  id        Int     @id @default(autoincrement())
-  user      Users      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int     @unique
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  cartItems CartItem[]
-}
-
-model CartItem {
-  id        Int   @id @default(autoincrement())
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  cartId    Int
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId Int
-  quantity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  addonOptions  AddonOption[]  @relation("CartItemAddonOptions")
-
-}
-
-model Order {
-  id           Int       @id @default(autoincrement())
-  user         Users        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       Int
-  totalAmount  Float
-  status       OrderStatus  @default(PENDING)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-
-  orderItems   OrderItem[] 
-  payment      Payment?
-  shipping     ShippingInfo?
-}
-
-model OrderItem {
-  id         Int   @id @default(autoincrement())
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId    Int
-  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId  Int
-  quantity   Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  addonOptions AddonOption[] @relation("OrderItemAddonOptions")
-}
-
-model Payment {
-  id         Int         @id @default(autoincrement())
-  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId    Int         @unique
-  amount     Float
-  method     String
-  status     PaymentStatus  @default(PENDING)
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
-}
-
-model ShippingInfo {
-  id         Int   @id @default(autoincrement())
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId    Int   @unique
-  houseNo   String
-  street    String
-  society   String
-  city      String
-  zipCode   String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-}
-
-model ProductReview {
-  id        Int   @id @default(autoincrement())
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId Int
-  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
   userId    Int
+
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  Int
+}
+
+model Quiz {
+  id        Int      @id @default(autoincrement())
+  title     String
+  createdAt DateTime @default(now())
+
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  Int
+
+  createdBy User     @relation(fields: [userId], references: [id])
+  userId    Int
+
+  questions Question[]
+}
+
+model Question {
+  id        Int      @id @default(autoincrement())
+  question  String
+  options   String[] 
+  answer    String
+  createdAt DateTime @default(now())
+
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  quizId    Int
+}
+
+model Progress {
+  id          Int      @id @default(autoincrement())
+  completed   Boolean  @default(false)
+  percentage  Float    @default(0)
+  lastWatched Int?     
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+
+  lecture     Lecture  @relation(fields: [lectureId], references: [id])
+  lectureId   Int
+}
+
+model Group {
+  id        Int          @id @default(autoincrement())
+  name      String
+  createdAt DateTime      @default(now())
+
+  members   GroupMember[]
+  messages  ChatMessage[]
+}
+
+model GroupMember {
+  id       Int    @id @default(autoincrement())
+  role     GroupRole @default(Member)
+
+  user     User   @relation(fields: [userId], references: [id])
+  userId   Int
+
+  group    Group  @relation(fields: [groupId], references: [id])
+  groupId  Int
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+
+  group     Group?   @relation(fields: [groupId], references: [id])
+  groupId   Int?
+}
+
+model Feedback {
+  id        Int      @id @default(autoincrement())
   rating    Int
-  comment   String
+  comment   String?
   createdAt DateTime @default(now())
-}
 
-model Favourite {
-  id        Int   @id @default(autoincrement())
-  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  Int
+
+  user      User     @relation(fields: [userId], references: [id])
   userId    Int
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId Int
-  createdAt DateTime @default(now())
 }
 
+model Comment {
+  id        Int       @id @default(autoincrement())
+  comment   String
+  createdAt DateTime  @default(now())
+
+
+  lecture   Lecture?  @relation(fields: [lectureId], references: [id])
+  lectureId Int?
+
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int
+
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  parentId  Int?
+
+  replies   Comment[] @relation("CommentReplies")
+}
+
+
+enum Role {
+  Student
+  Admin
+}
+
+enum GroupRole {
+  Admin
+  Member
+}

@@ -1,24 +1,13 @@
-// src/index.ts
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { PrismaClient } from "@prisma/client";
+
+// Import routes
+import { authRouter, userRouter, courseRouter, enrollmentRouter, feedbackRouter, groupMemberRouter, groupRouter, lectureRouter, noteRouter, progressRouter, questionRouter, quizRouter, chatMessageRouter, commentRouter } from './api/routes';
 
 // Load .env only in local dev
 if (process.env.NODE_ENV !== "production") {
   dotenv.config();
-}
-
-// Lazy Prisma client instance
-let prisma: PrismaClient | null = null;
-function getPrisma() {
-  // if (!prisma) {
-  //   prisma = new PrismaClient({
-  //     log:
-  //       process.env.NODE_ENV === "production" ? [] : ["query", "error", "warn"],
-  //   });
-  // }
-  return null;
 }
 
 const app: Express = express();
@@ -32,23 +21,33 @@ app.use(
 );
 app.use(express.json());
 
+// API routes
+app.use('/auth', authRouter);
+app.use('/users', userRouter);
+app.use('/courses', courseRouter);
+app.use('/lectures', lectureRouter);
+app.use('/notes', noteRouter);
+app.use('/enrollments', enrollmentRouter);
+app.use('/quizzes', quizRouter);
+app.use('/questions', questionRouter);
+app.use('/progress', progressRouter);
+app.use('/groups', groupRouter);
+app.use('/group-members', groupMemberRouter);
+app.use('/chat-messages', chatMessageRouter);
+app.use('/feedbacks', feedbackRouter);
+app.use('/comments', commentRouter);
+
 // Health check
 app.get("/", (req: Request, res: Response) => {
   res.status(200).send("E-Learning backend is running on Vercel 🚀");
 });
 
-// Simple DB test route (debug only — remove in prod)
-app.get("/test-db", (req, res) => {
+// Test route
+app.get("/test", (req: Request, res) => {
   res.json({ status: "ok", message: "Route is working" });
 });
 
-// Local dev mode
-if (process.env.NODE_ENV !== "production") {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
-  });
-}
-
-// ✅ Export handler for Vercel
-export default app;
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
+});
