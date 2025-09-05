@@ -1,13 +1,15 @@
 export interface CreateLectureDto {
   title: string;
+  description: string;
   videoUrl: string;
-  duration: number;
+  duration: string;
   courseId: number;
 }
 
 export interface UpdateLectureDto {
   title?: string;
+  description?: string;
   videoUrl?: string;
-  duration?: number;
+  duration?: string;
   courseId?: number;
 } 

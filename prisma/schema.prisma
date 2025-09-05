@@ -1,7 +1,7 @@
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "./ERD/erd.svg"
-}
+// generator erd {
+//   provider = "prisma-erd-generator"
+//   output   = "./ERD/erd.svg"
+// }
 
 generator client {
   provider = "prisma-client-js"
@@ -52,8 +52,9 @@ model Course {
 model Lecture {
   id         Int      @id @default(autoincrement())
   title      String
+  description String
   videoUrl   String
-  duration   Int
+  duration   String
   createdAt  DateTime  @default(now())
 
   course     Course    @relation(fields: [courseId], references: [id])
